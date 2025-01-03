@@ -56,7 +56,7 @@ Cieľom projektu je analyzovať predajné údaje s cieľom identifikovať hudobn
 
 ERD diagram znázorňuje vzťahy medzi tabuľkami v pôvodnej štruktúre zdrojových dát. Poskytuje prehľad o prepojeniach medzi entitami, ako sú zákazníci, faktúry, skladby a žánre. Obrázok nižšie zobrazuje tento diagram v plnej štruktúre.
 
-![Obrázok 1 Entitno-relačná schéma AmazonBooks](erd_schema.png)
+![Obrázok 1 Entitno-relačná schéma Chinook](erd_schema.png)
 
 ## 2. Návrh dimenzionálneho modelu
 
@@ -169,4 +169,4 @@ Obsahuje informácie o zamestnancoch.
 
 ---
 
-Tento model umožňuje efektívnu analýzu predaja podľa rôznych dimenzií, ako sú skladby, faktúry, dátumy, časy a zamestnanci.
+![Obrázok 2 Schéma hviezdy pre Chinook](star_schema.png)
