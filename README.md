@@ -51,3 +51,122 @@ Cieľom projektu je analyzovať predajné údaje s cieľom identifikovať hudobn
 11. **Tracks**  
     Ukladá podrobnosti o skladbách, ako sú názov, album, žáner, dĺžka skladby a cena. Táto tabuľka je kľúčová pre analýzu predajnosti jednotlivých skladieb, identifikáciu najobľúbenejších skladieb a albumov.  
     **Stĺpce:** TrackId, Name, AlbumId, MediaTypeId, GenreId, Composer, Milliseconds, Bytes, UnitPrice
+
+### 1.2 ERD Diagram: Vzťahy medzi tabuľkami
+
+ERD diagram znázorňuje vzťahy medzi tabuľkami v pôvodnej štruktúre zdrojových dát. Poskytuje prehľad o prepojeniach medzi entitami, ako sú zákazníci, faktúry, skladby a žánre. Obrázok nižšie zobrazuje tento diagram v plnej štruktúre.
+
+![Obrázok 1 Entitno-relačná schéma AmazonBooks](erd_schema.png)
+
+## 2. Návrh dimenzionálneho modelu
+
+## Faktová tabuľka: `Fact_Sales`
+Faktová tabuľka obsahuje hlavné metriky a kľúče, ktoré sa budú používať pri analýze.
+
+- **Hlavné metriky:**
+  - `UnitPrice (DECIMAL(10,2))`: Cena za jednotku.
+  - `Quantity (INT)`: Počet predaných jednotiek.
+  
+- **Kľúče:**
+  - `Fact_SalesId (INT)`: Primárny kľúč faktovej tabuľky.
+  - `TrackId (INT)`: Cudzí kľúč na dimenziu `Dim_Track`.
+  - `InvoiceId (INT)`: Cudzí kľúč na dimenziu `Dim_Invoice`.
+  - `DateId (INT)`: Cudzí kľúč na dimenziu `Dim_Date`.
+  - `TimeId (INT)`: Cudzí kľúč na dimenziu `Dim_Time`.
+  - `EmployeeId (INT)`: Cudzí kľúč na dimenziu `Dim_Employee`.
+
+---
+
+## Dimenzie
+
+### 1. `Dim_Track`
+Obsahuje informácie o skladbách.
+
+- **Atribúty:**
+  - `Dim_TrackId (INT)`: Primárny kľúč.
+  - `Name (VARCHAR(200))`: Názov skladby.
+  - `Composer (VARCHAR(220))`: Skladateľ.
+  - `Miliseconds (INT)`: Dĺžka skladby v milisekundách.
+  - `Bytes (INT)`: Veľkosť skladby v bajtoch.
+  - `UnitPrice (DECIMAL(10,2))`: Cena za skladbu.
+  - `MediaType (VARCHAR(45))`: Typ média.
+  - `Genre (VARCHAR(45))`: Žáner.
+  - `Album (VARCHAR(45))`: Album.
+  - `Artist (VARCHAR(45))`: Umelec.
+  - `Playlist (VARCHAR(45))`: Playlist.
+
+- **Typ dimenzie:** SCD Type 1 (jednoduché aktualizácie bez histórie).
+
+---
+
+### 2. `Dim_Invoice`
+Obsahuje informácie o faktúrach.
+
+- **Atribúty:**
+  - `Dim_InvoiceId (INT)`: Primárny kľúč.
+  - `InvoiceDate (DATETIME)`: Dátum faktúry.
+  - `BillingAddress (VARCHAR(70))`: Fakturačná adresa.
+  - `BillingCity (VARCHAR(40))`: Mesto.
+  - `BillingState (VARCHAR(40))`: Štát.
+  - `BillingCountry (VARCHAR(40))`: Krajina.
+  - `BillingPostalCode (VARCHAR(10))`: PSČ.
+  - `Total (DECIMAL(10,2))`: Celková suma.
+  - `Customer_FirstName (VARCHAR(45))`: Meno zákazníka.
+  - `Customer_LastName (VARCHAR(45))`: Priezvisko zákazníka.
+  - `Email (VARCHAR(45))`: Email zákazníka.
+
+- **Typ dimenzie:** SCD Type 2 (sledovanie historických zmien).
+
+---
+
+### 3. `Dim_Date`
+Obsahuje informácie o dátumoch.
+
+- **Atribúty:**
+  - `Dim_DateId (INT)`: Primárny kľúč.
+  - `Time (DATE)`: Dátum.
+  - `Day (INT)`: Deň.
+  - `Month (INT)`: Mesiac.
+  - `Year (INT)`: Rok.
+
+- **Typ dimenzie:** SCD Type 1.
+
+---
+
+### 4. `Dim_Time`
+Obsahuje informácie o čase.
+
+- **Atribúty:**
+  - `Dim_TimeId (INT)`: Primárny kľúč.
+  - `Minute (VARCHAR(45))`: Minúta.
+  - `Hour (VARCHAR(45))`: Hodina.
+
+- **Typ dimenzie:** SCD Type 1.
+
+---
+
+### 5. `Dim_Employee`
+Obsahuje informácie o zamestnancoch.
+
+- **Atribúty:**
+  - `Dim_EmployeeId (INT)`: Primárny kľúč.
+  - `FirstName (VARCHAR(20))`: Meno.
+  - `LastName (VARCHAR(20))`: Priezvisko.
+  - `Title (VARCHAR(30))`: Titul.
+  - `ReportsTo (INT)`: ID nadriadeného.
+  - `BirthDate (DATETIME)`: Dátum narodenia.
+  - `HireDate (DATETIME)`: Dátum prijatia.
+  - `Address (VARCHAR(70))`: Adresa.
+  - `City (VARCHAR(40))`: Mesto.
+  - `State (VARCHAR(40))`: Štát.
+  - `Country (VARCHAR(40))`: Krajina.
+  - `PostalCode (VARCHAR(10))`: PSČ.
+  - `Phone (VARCHAR(24))`: Telefón.
+  - `Fax (VARCHAR(24))`: Fax.
+  - `Email (VARCHAR(60))`: Email.
+
+- **Typ dimenzie:** SCD Type 2 (sledovanie historických zmien).
+
+---
+
+Tento model umožňuje efektívnu analýzu predaja podľa rôznych dimenzií, ako sú skladby, faktúry, dátumy, časy a zamestnanci.
