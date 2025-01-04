@@ -1,10 +1,14 @@
 # Téma Projektu
 
+---
+
 Projekt je zameraný na analýzu predaja v rámci databázy Chinook DB. Táto databáza obsahuje údaje o digitálnom predaji hudby, vrátane informácií o zákazníkoch, produktoch, skladby, albumy, žánre a fakturácii.
 
 ## 1. Úvod a popis zdrojových dát 
 
 Cieľom projektu je analyzovať predajné údaje s cieľom identifikovať hudobné žánre, ktoré sa najviac predávajú, a zistiť, ktoré skladby a albumy sú medzi zákazníkmi najobľúbenejšie. Okrem toho projekt skúma regionálne predajné trendy, aby odhalil oblasti s najvyšším predajom.
+
+---
 
 ### 1.1 Základný popis každej tabuľky
 
@@ -170,3 +174,5 @@ Obsahuje informácie o zamestnancoch.
 ---
 
 ![Obrázok 2 Schéma hviezdy pre Chinook](star_schema.png)
+
+
