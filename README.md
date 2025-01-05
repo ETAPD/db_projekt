@@ -6,7 +6,7 @@ Projekt je zameraný na analýzu predaja v rámci databázy Chinook DB. Táto da
 
 ## 1. Úvod a popis zdrojových dát 
 
-Cieľom projektu je analyzovať predajné údaje s cieľom identifikovať hudobné žánre, ktoré sa najviac predávajú, a zistiť, ktoré skladby a albumy sú medzi zákazníkmi najobľúbenejšie. Okrem toho projekt skúma regionálne predajné trendy, aby odhalil oblasti s najvyšším predajom.
+Cieľom projektu je analyzovať predajné údaje s cieľom identifikovať hudobné žánre, ktoré sa najviac predávajú, a zistiť, ktoré albumy sú medzi zákazníkmi najobľúbenejšie. Okrem toho projekt skúma regionálne predajné trendy, aby odhalil oblasti s najvyšším predajom.
 
 ---
 
@@ -64,7 +64,7 @@ ERD diagram znázorňuje vzťahy medzi tabuľkami v pôvodnej štruktúre zdrojo
 
 ## 2. Návrh dimenzionálneho modelu
 
-## Faktová tabuľka: `Fact_Sales`
+### Faktová tabuľka: `Fact_Sales`
 Faktová tabuľka obsahuje hlavné metriky a kľúče, ktoré sa budú používať pri analýze.
 
 - **Hlavné metriky:**
@@ -81,9 +81,9 @@ Faktová tabuľka obsahuje hlavné metriky a kľúče, ktoré sa budú používa
 
 ---
 
-## Dimenzie
+### Dimenzie
 
-### 1. `Dim_Track`
+#### 1. `Dim_Track`
 Obsahuje informácie o skladbách.
 
 - **Atribúty:**
@@ -103,7 +103,7 @@ Obsahuje informácie o skladbách.
 
 ---
 
-### 2. `Dim_Invoice`
+#### 2. `Dim_Invoice`
 Obsahuje informácie o faktúrach.
 
 - **Atribúty:**
@@ -123,7 +123,7 @@ Obsahuje informácie o faktúrach.
 
 ---
 
-### 3. `Dim_Date`
+#### 3. `Dim_Date`
 Obsahuje informácie o dátumoch.
 
 - **Atribúty:**
@@ -137,7 +137,7 @@ Obsahuje informácie o dátumoch.
 
 ---
 
-### 4. `Dim_Time`
+#### 4. `Dim_Time`
 Obsahuje informácie o čase.
 
 - **Atribúty:**
@@ -149,7 +149,7 @@ Obsahuje informácie o čase.
 
 ---
 
-### 5. `Dim_Employee`
+#### 5. `Dim_Employee`
 Obsahuje informácie o zamestnancoch.
 
 - **Atribúty:**
@@ -174,5 +174,27 @@ Obsahuje informácie o zamestnancoch.
 ---
 
 ![Obrázok 2 Schéma hviezdy pre Chinook](star_schema.png)
+
+## 3. ETL proces v nástroji Snowflake
+
+### 3.1 Extract 
+
+Tuto sa zameriava na získanie dát zo súborov formátu CSV uložených v stage a ich načítanie do dočasných tabuliek (staging tabuliek) v Snowflake.
+
+**Vytvorenie stage**
+```sql
+CREATE OR REPLACE STAGE my_stage;
+```
+Tento príkaz vytvára alebo nahrádza dočasné úložisko `my_stage`, v ktorom môžeme ukladať dočasné súbory (v tomto prípade súbory vo formáte CSV) a potom ich spracovať.
+
+**Načítanie dát z my_stage do staging tabuliek**
+
+```sql
+COPY INTO customer_staging
+FROM @my_stage/customer.csv
+FILE_FORMAT = (TYPE = 'CSV' FIELD_OPTIONALLY_ENCLOSED_BY = '"' SKIP_HEADER = 1); 
+```
+
+Tento prikaz kopíruje dáta zo súboru `customer.csv` v stage `my_stage` do tabuľky `customer_staging`. FIELD_OPTIONALLY_ENCLOSED_BY = '"' určuje hodnoty oddelené úvodzovkami.
 
 
