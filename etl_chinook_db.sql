@@ -186,7 +186,8 @@ SELECT
     inv.BillingCountry,
     inv.BillingPostalCode,
     inv.Total,
-    cu.SupportRepId as SupportRepId
+    cu.SupportRepId as SupportRepId,
+    cu.email as Email
 FROM Invoice_staging inv
 JOIN Customer_staging cu ON inv.CustomerId = cu.CustomerId;
 
