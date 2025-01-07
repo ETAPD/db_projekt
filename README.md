@@ -93,7 +93,7 @@ Obsahuje informácie o skladbách.
   - `Dim_TrackId (INT)`: Primárny kľúč.
   - `Name (VARCHAR(200))`: Názov skladby.
   - `Composer (VARCHAR(220))`: Skladateľ.
-  - `Miliseconds (INT)`: Dĺžka skladby v milisekundách.
+  - `Milliseconds (INT)`: Dĺžka skladby v milisekundách.
   - `Bytes (INT)`: Veľkosť skladby v bajtoch.
   - `UnitPrice (DECIMAL(10,2))`: Cena za skladbu.
 
@@ -113,8 +113,8 @@ Obsahuje informácie o faktúrach.
   - `BillingCountry (VARCHAR(40))`: Krajina.
   - `BillingPostalCode (VARCHAR(10))`: PSČ.
   - `Total (DECIMAL(10,2))`: Celková suma.
-  - `Customer_FirstName (VARCHAR(45))`: Meno zákazníka.
-  - `Customer_LastName (VARCHAR(45))`: Priezvisko zákazníka.
+  - `FirstName (VARCHAR(45))`: Meno zákazníka.
+  - `LastName (VARCHAR(45))`: Priezvisko zákazníka.
   - `Email (VARCHAR(45))`: Email zákazníka.
 
 - **Typ dimenzie:** SCD Type 2 (sledovanie historických zmien).
@@ -366,7 +366,8 @@ SELECT
     dd.Dim_DateId AS DateId,
     de.Dim_EmployeeId AS EmployeeId,
     dg.Dim_GenreId AS GenreId,
-    dp.Dim_PlaylistId AS PlaylistId
+    dp.Dim_PlaylistId AS PlaylistId,
+   da.Dim_ArtistId AS ArtistId
 FROM InvoiceLine_staging il
 JOIN Dim_Track dt ON il.TrackId = dt.Dim_TrackId
 JOIN Dim_Invoice di ON il.InvoiceId = di.Dim_InvoiceId
@@ -374,8 +375,11 @@ JOIN Dim_Date dd ON CAST(di.InvoiceDate AS DATE) = dd.Date
 JOIN Dim_Employee de ON di.SupportRepId = de.Dim_EmployeeId
 LEFT JOIN Track_staging tr ON il.TrackId = tr.TrackId
 LEFT JOIN PlaylistTrack_staging pt ON il.TrackId = pt.TrackId
+LEFT JOIN Album_staging al ON tr.AlbumId = al.AlbumId
+LEFT JOIN Artist_staging ar ON al.ArtistId = ar.ArtistId
 LEFT JOIN Dim_Genre dg ON tr.GenreId = dg.Dim_GenreId
-LEFT JOIN Dim_Playlist dp ON pt.PlaylistId = dp.Dim_PlaylistId;
+LEFT JOIN Dim_Playlist dp ON pt.PlaylistId = dp.Dim_PlaylistId
+LEFT JOIN Dim_Artist da ON ar.ArtistId = da.Dim_ArtistId;
 ```
 Tento príkaz vytvára tabuľku `Fact_Sales` a uchováva údaje o predajoch z rôznych staging tabuliek a dimenzií, pričom spája príslušné dimenzie na nové stĺpce v tabuľke `Fact_Sales`. Tento krok zabezpečuje, že všetky potrebné informácie sú zahrnuté a pripravené na analýzu.
 
@@ -403,5 +407,90 @@ DROP TABLE InvoiceLine_staging;
 
 Dashboard obsahuje 5 vizualizácií, ktoré poskytujú prehľad o predajných trendoch a preferenciách zákazníkov. Tieto vizualizácie pomáhajú identifikovať najpredávanejšie žánre,playlisty, ako aj regionálne predajné trendy. Zlepšujú pochopenie správania zákazníkov a umožňujú lepšie rozhodovanie na základe dát.
 
+![Obrázok 3 Dashboard Chinook datasetu](chinook_dashboard.png)
 
+### Graf 1: Najpredávanejšie Žánre
 
+Tento graf zobrazuje celkový predaj podľa jednotlivých hudobných žánrov. Pomáha zodpovedať otázku, ktorý hudobný žáner generuje najvyššie príjmy z predaja.
+
+```sql
+SELECT
+    dg.Name AS Genre,
+    SUM(fs.UnitPrice * fs.Quantity) AS TotalSales
+FROM Fact_Sales fs
+JOIN Dim_Genre dg ON fs.GenreId = dg.Dim_GenreId
+GROUP BY dg.Name
+ORDER BY TotalSales DESC
+LIMIT 10;
+```
+
+### Graf 2: Najobľúbenejšie Playlisty
+
+Tento graf zobrazuje počet skladieb v jednotlivých playlistoch. Pomáha zodpovedať otázku, ktoré playlisty sú najpopulárnejšie.
+
+```sql
+SELECT
+    dp.Name AS Playlist,
+    COUNT(fs.PlaylistId) AS PlaylistCount
+FROM Fact_Sales fs
+JOIN Dim_Playlist dp ON fs.PlaylistId = dp.Dim_PlaylistId
+GROUP BY dp.Name
+ORDER BY PlaylistCount DESC
+LIMIT 10;
+```
+
+### Graf 3: Predaje Podľa Krajiny
+
+Tento graf zobrazuje celkový predaj podľa jednotlivých krajín. Pomáha zodpovedať otázku, v ktorých krajinách sú najvyššie predaje.
+
+```sql
+SELECT
+    di.BillingCountry AS Country,
+    SUM(fs.UnitPrice * fs.Quantity) AS TotalSales
+FROM Fact_Sales fs
+JOIN Dim_Invoice di ON fs.InvoiceId = di.Dim_InvoiceId
+GROUP BY di.BillingCountry
+ORDER BY TotalSales DESC;
+```
+
+### Graf 4: Najpredávanejšie Skladby za Každý Rok
+
+Tento graf zobrazuje najpredávanejšie skladby za každý rok. Pomáha zodpovedať otázku, ktoré skladby boli najpredávanejšie v jednotlivých rokoch.
+
+```sql
+SELECT
+    Year,
+    Track,
+    TotalSales
+FROM (
+    SELECT
+        dt.Name AS Track,
+        dd.year AS Year,
+        SUM(fs.UnitPrice * fs.Quantity) AS TotalSales,
+        ROW_NUMBER() OVER (PARTITION BY dd.year ORDER BY SUM(fs.UnitPrice * fs.Quantity) DESC) AS rn
+    FROM Fact_Sales fs
+    JOIN Dim_Track dt ON fs.TrackId = dt.Dim_TrackId
+    JOIN Dim_Date dd ON fs.DateId = dd.Dim_DateId
+    GROUP BY dt.Name, dd.year
+) ranked_tracks
+WHERE rn = 1
+ORDER BY Year, TotalSales DESC;
+```
+
+### Graf 5: Najpopulárnejší Umelci
+
+Tento graf zobrazuje počet predaných jednotiek pre jednotlivých umelcov. Pomáha zodpovedať otázku, ktorí umelci sú najpopulárnejší podľa počtu predaných jednotiek.
+
+```sql
+SELECT
+    da.Name AS Artist,
+    SUM(fs.Quantity) AS Quantity
+FROM Fact_Sales fs
+JOIN Dim_Artist da ON fs.ArtistId = da.Dim_ArtistId
+GROUP BY da.Name
+ORDER BY Quantity DESC
+LIMIT 10;
+```
+
+---
+**Autor**: Emil Tuan Anh Pham Dac
