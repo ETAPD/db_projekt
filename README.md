@@ -125,12 +125,17 @@ Obsahuje informácie o faktúrach.
 Obsahuje informácie o dátumoch.
 
 - **Atribúty:**
-  - `Dim_DateId (INT)`: Primárny kľúč.
-  - `Time (DATE)`: Dátum.
-  - `Day (INT)`: Deň.
-  - `Month (INT)`: Mesiac.
-  - `Year (INT)`: Rok.
-
+   - `Dim_DateId (INT)` - Primárny kľúč.  
+   - `Date (DATE)` - Dátum.  
+   - `Day (INT)` - Deň.  
+   - `Month (INT)` - Mesiac.  
+   - `Year (INT)` - Rok.  
+   - `Quarter (INT)` - Štvrťrok.  
+   - `Day_Name (VARCHAR)` - Názov dňa.  
+   - `Day_Week (INT)` - Poradie dňa v týždni.  
+   - `Week (INT)` - Poradie týždňa v roku.  
+   - `Month_Name (VARCHAR)` - Názov mesiaca.
+      
 - **Typ dimenzie:** SCD Type 1.
 
 ---
